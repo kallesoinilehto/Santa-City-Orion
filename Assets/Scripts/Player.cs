@@ -5,6 +5,7 @@ using UnityEngine.InputSystem;
 [RequireComponent(typeof(CapsuleCollider))]
 public class Player : MonoBehaviour
 {
+    [Header("Movement Settings")]
     public float moveSpeed = 5f;
     public float jumpHeight = 2f;
     public float gravity = -9.81f;
@@ -35,7 +36,7 @@ public class Player : MonoBehaviour
 
     void FixedUpdate()
     {
-        // WASD input
+        // WASD input (world-relative)
         float horizontal = 0f;
         float vertical = 0f;
 
@@ -60,20 +61,20 @@ public class Player : MonoBehaviour
         }
         else
         {
-            velocity.y = 0f; // Reset vertical velocity when grounded
+            velocity.y = 0f;
         }
 
-        // Combine movement
+        // Combine horizontal and vertical movement
         Vector3 finalMove = move + new Vector3(0, velocity.y * Time.fixedDeltaTime, 0);
 
         // Move the kinematic Rigidbody
-        rb.MovePosition(rb.position + transform.TransformDirection(finalMove));
+        rb.MovePosition(rb.position + finalMove);
     }
 
     // Ground check using Raycast
     private bool IsGrounded()
     {
-        Vector3 origin = rb.position + Vector3.up * 0.1f; // Slight offset to avoid self-collision
+        Vector3 origin = rb.position + Vector3.up * 0.1f;
         float rayLength = col.bounds.extents.y + groundCheckDistance;
         return Physics.Raycast(origin, Vector3.down, rayLength);
     }
