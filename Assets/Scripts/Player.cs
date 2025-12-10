@@ -26,7 +26,9 @@ public class PlayerController : MonoBehaviour
     void Start()
     {
         rb = GetComponent<Rigidbody>();
-        rb.isKinematic = true; // Using kinematic Rigidbody for manual movement
+        // Use physics-driven movement (not kinematic).
+        rb.isKinematic = false;
+        rb.freezeRotation = true; // We'll control rotation manually in the script
         col = GetComponent<CapsuleCollider>();
     }
 
@@ -77,7 +79,7 @@ public class PlayerController : MonoBehaviour
             move = (cameraForward * vertical + cameraRight * horizontal).normalized * moveSpeed;
 
             // Smooth rotation toward movement direction
-            Quaternion targetRot = Quaternion.LookRotation(move);
+            Quaternion targetRot = Quaternion.LookRotation(new Vector3(move.x, 0f, move.z));
             transform.rotation = Quaternion.Slerp(transform.rotation, targetRot, 10f * Time.fixedDeltaTime);
         }
 
@@ -107,11 +109,10 @@ public class PlayerController : MonoBehaviour
                 velocity.y = 0f;
         }
 
-        // --- Combine horizontal and vertical movement ---
-        Vector3 finalMove = move * Time.fixedDeltaTime + new Vector3(0f, velocity.y * Time.fixedDeltaTime, 0f);
-
-        // Move the player
-        rb.MovePosition(rb.position + finalMove);
+        // --- Apply movement using velocities ---
+        // rb.velocity is per-second velocity, so don't multiply by deltaTime here.
+        Vector3 newVelocity = new Vector3(move.x, velocity.y, move.z);
+        rb.linearVelocity = newVelocity;
     }
 
     private bool IsGrounded()
